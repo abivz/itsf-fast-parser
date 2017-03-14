@@ -1,5 +1,6 @@
 # About
-`FastParser.php` contain function `Parse(fastXmlContent)` which converting large fast xml-file to short like this:
+### FASTParser.php
+`FASTParser.php` contain function `Parse(fastXmlContent)` which converting large FAST xml-file to short like this:
 
 ```json
 {
@@ -73,6 +74,8 @@
     ]
 }
 ```
+### FASTArchive.php
+`FASTArchive.php` contain function `ProccessFile(fileArray, inputName, saveUploadedFile = false, savePath = '')` which process FAST-archive or FAST xml-file and return xml content or NULL.
 
 # License
 The MIT License (MIT)
