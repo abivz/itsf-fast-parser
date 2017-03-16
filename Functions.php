@@ -30,7 +30,7 @@ function GetLeaderboard($data)
   {
     foreach ($tournament['phases'] as $phase)
     {
-      if ($phase['type'] != 'D')
+      if ($phase['type'] == 'D' || $phase['type'] == 'S')
         continue;
 
       foreach ($phase['ranks'] as $rank)
