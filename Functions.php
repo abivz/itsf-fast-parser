@@ -30,15 +30,15 @@ function GetLeaderboard($data)
   {
     foreach ($tournament['phases'] as $phase)
     {
-      if ($phase['type'] == 'D' || $phase['type'] == 'S')
-        continue;
-
-      foreach ($phase['ranks'] as $rank)
-      {
-        $team         = GetTeamById($data, $rank['team_id']);
-        $teamPlayers  = $team['players'];
-        $leaderboard[] = array(GetPlayerById($data, $teamPlayers[0]), GetPlayerById($data, $teamPlayers[1]));
-      }
+    	if ($phase['type'] == 'D' || $phase['type'] == 'S')
+      	{
+		    foreach ($phase['ranks'] as $rank)
+		    {
+			    $team         = GetTeamById($data, $rank['team_id']);
+			    $teamPlayers  = $team['players'];
+			    $leaderboard[] = array(GetPlayerById($data, $teamPlayers[0]), GetPlayerById($data, $teamPlayers[1]));
+		    }
+  		}
     }
   }
 
