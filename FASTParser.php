@@ -1,140 +1,189 @@
 <?php
-/*
-The MIT License (MIT)
-
-Copyright © 2017 ALEXANDER BIVZYUK
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-associated documentation files (the “Software”), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions
-of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-function Parse($xml)
+class FASTParser
 {
-  $data = XmlToObject($xml);
-  if ($data == NULL) return NULL;
+    public $_DATA = NULL;
 
-  //DEBUG: View xml tree.
-  //echo '<pre>' . var_export($data, true) . '</pre><br><br>';
+    //  Parse FAST xml content and store result in $_DATA
+    //  Return TRUE or FALSE
+    public function Parse($xml_content)
+    {
+        $data = $this->XMLContentToObject($xml_content);
+        if ($data === NULL)
+            return FALSE;
 
-  //Date when file created.
-  $date     = date_parse_from_format("Ymdsih", $data->creationDate);
-  //Fast version.
-  $version  = (string)$data->fastVersion;
-  //Fast build.
-  $build    = (int)$data->fastBuild;
-  //Get players list.
-  $playerInfos = $data->registeredPlayers->playerInfos;
-  if ($playerInfos)
-  {
-    $players  = array();
-    foreach ($playerInfos as $playerInfo)
-    {
-      $license = (int)$playerInfo->noLicense;
-      if ($license)
-      {
-        $playerId   = (int)$playerInfo->playerId;
-        $players[]  = array('id' => $playerId, 'license' => $license);
-      }
-      else
-      {
-        $playerId   = (int)$playerInfo->player->id;
-        $firstName  = (string)$playerInfo->player->person->firstName;
-        $lastName   = (string)$playerInfo->player->person->lastName;
-        $players[]  = array('id' => $playerId, 'first_name' => $firstName, 'last_name' => $lastName);
-      }
-    }
-  }
-  //Get tournaments list.
-  $tournaments = array();
-  if ($data->tournaments->tournament)
-  {
-    foreach ($data->tournaments->tournament as $tournament)
-    {
-      $name       = (string)$tournament->name;
-      $type       = (string)$tournament->type;
-      $beginDate  = date_parse_from_format("d/m/Y", (string)$tournament->beginDate);
-      $endDate    = date_parse_from_format("d/m/Y", (string)$tournament->endDate);
-      $country    = (string)$tournament->country;
-      //Get teams list.
-      $teams = array();
-      if ($tournament->competition->competitionTeam)
-      {
-        foreach ($tournament->competition->competitionTeam as $competitionTeam)
+        //Date when file created.
+        $date     = date_parse_from_format("Ymdsih", $data->creationDate);
+        //Fast version.
+        $version  = (string)$data->fastVersion;
+        //Fast build.
+        $build    = (int)$data->fastBuild;
+        //Get players list.
+        $playerInfos = $data->registeredPlayers->playerInfos;
+        if ($playerInfos)
         {
-          $teamId     = (int)$competitionTeam->id;
-          $player1Id  = (int)$competitionTeam->team->player1Id;
-          $player2Id  = (int)$competitionTeam->team->player2Id;
-          $teams[]    = array('id' => $teamId, 'players' => array($player1Id, $player2Id));
-        }
-      }
-      //Get phases list.
-      $phases = array();
-      if ($tournament->competition->phase)
-      {
-        foreach ($tournament->competition->phase as $phase)
-        {
-          $phaseType = (string)$phase->phaseType;
-          if ($phase->phaseRanking->ranking)
-          {
-            $ranks = array();
-            foreach ($phase->phaseRanking->ranking as $ranking)
+            $players  = array();
+            foreach ($playerInfos as $playerInfo)
             {
-              $teamId = (int)$ranking->definitivePhaseOpponentRanking->teamId;
-              $ranks[] = array('team_id' => $teamId);
+                $license = (int)$playerInfo->noLicense;
+                if ($license)
+                {
+                    $playerId   = (int)$playerInfo->playerId;
+                    $players[]  = array('id' => $playerId, 'license' => $license);
+                }
+                else
+                {
+                    $playerId   = (int)$playerInfo->player->id;
+                    $firstName  = (string)$playerInfo->player->person->firstName;
+                    $lastName   = (string)$playerInfo->player->person->lastName;
+                    $players[]  = array('id' => $playerId, 'first_name' => $firstName, 'last_name' => $lastName);
+                }
             }
-          }
-          $phases[] = array('type' => $phaseType, 'ranks' => $ranks);
         }
-      }
+        else
+        {
+            return FALSE;
+        }
 
-      $tournaments[] = array('name' => $name,
-                             'type' => $type,
-                             'begin_date' => array('day' => $beginDate['day'],
-                                                   'month' => $beginDate['month'],
-                                                   'year' => $beginDate['year']),
-                             'end_date' => array('day' => $endDate['day'],
-                                                 'month' => $endDate['month'],
-                                                 'year' => $endDate['year']),
-                             'country' => $country,
-                             'teams' => $teams,
-                             'phases' => $phases);
+        //Get tournaments list.
+        $tournaments = array();
+        if ($data->tournaments->tournament)
+        {
+            foreach ($data->tournaments->tournament as $tournament)
+            {
+                $name       = (string)$tournament->name;
+                $type       = (string)$tournament->type;
+                $beginDate  = date_parse_from_format("d/m/Y", (string)$tournament->beginDate);
+                $endDate    = date_parse_from_format("d/m/Y", (string)$tournament->endDate);
+                $country    = (string)$tournament->country;
+                //Get teams list.
+                $teams = array();
+                if ($tournament->competition->competitionTeam)
+                {
+                    foreach ($tournament->competition->competitionTeam as $competitionTeam)
+                    {
+                        $teamId     = (int)$competitionTeam->id;
+                        $player1Id  = (int)$competitionTeam->team->player1Id;
+                        $player2Id  = (int)$competitionTeam->team->player2Id;
+                        $teams[]    = array('id' => $teamId, 'players' => array($player1Id, $player2Id));
+                    }
+                }
+                else
+                {
+                    return FALSE;
+                }
+                //Get phases list.
+                $phases = array();
+                if ($tournament->competition->phase)
+                {
+                    foreach ($tournament->competition->phase as $phase)
+                    {
+                        $phaseType = (string)$phase->phaseType;
+                        if ($phase->phaseRanking->ranking)
+                        {
+                            $ranks = array();
+                            foreach ($phase->phaseRanking->ranking as $ranking)
+                            {
+                                $teamId = (int)$ranking->definitivePhaseOpponentRanking->teamId;
+                                $ranks[] = array('team_id' => $teamId);
+                            }
+                        }
+                        $phases[] = array('type' => $phaseType, 'ranks' => $ranks);
+                    }
+                }
+                else
+                {
+                    return FALSE;
+                }
+
+                $tournaments[] = array('name' => $name,
+                                        'type' => $type,
+                                        'begin_date' => array('day' => $beginDate['day'],
+                                                            'month' => $beginDate['month'],
+                                                            'year' => $beginDate['year']),
+                                        'end_date' => array('day' => $endDate['day'],
+                                                            'month' => $endDate['month'],
+                                                            'year' => $endDate['year']),
+                                        'country' => $country,
+                                        'teams' => $teams,
+                                        'phases' => $phases);
+            }
+        }
+        else
+        {
+            return FALSE;
+        }
+
+        $this->_DATA = array('date'    => array('hour'   => $date['hour'],
+                                            'minute' => $date['minute'],
+                                            'second' => $date['second'],
+                                            'day'    => $date['day'],
+                                            'month'  => $date['month'],
+                                            'year'   => $date['year']),
+                        'version' => $version,
+                        'build'   => $build,
+                        'players' => $players,
+                        'tournaments' => $tournaments);
+
+        return TRUE;
     }
-  }
 
-  $output = array('date'    => array('hour'   => $date['hour'],
-                                     'minute' => $date['minute'],
-                                     'second' => $date['second'],
-                                     'day'    => $date['day'],
-                                     'month'  => $date['month'],
-                                     'year'   => $date['year']),
-                  'version' => $version,
-                  'build'   => $build,
-                  'players' => $players,
-                  'tournaments' => $tournaments);
+    public function GetLeaderboard()
+    {
+        if ($this->_DATA === NULL) return NULL;
 
-  return $output;
-}
+        $leaderboard = array();
+        foreach ($this->_DATA['tournaments'] as $tournament)
+        {
+            foreach ($tournament['phases'] as $phase)
+            {
+                if ($phase['type'] == 'D' || $phase['type'] == 'S')
+                {
+                    foreach ($phase['ranks'] as $rank)
+                    {
+                        $team         = $this->GetTeamById($rank['team_id']);
+                        $teamPlayers  = $team['players'];
+                        $leaderboard[] = array($this->GetPlayerById($teamPlayers[0]), $this->GetPlayerById($teamPlayers[1]));
+                    }
+                }
+            }
+        }
 
+        return $leaderboard;
+    }
 
-function XmlToObject($xml)
-{
-  libxml_use_internal_errors(true);
-  try {
-     return new SimpleXMLElement($xml);
-  } catch (Exception $e) {
-    return NULL;
-  }
+    public function GetTeamById($teamId)
+    {
+        if ($this->_DATA === NULL) return NULL;
+
+        foreach ($this->_DATA['tournaments'] as $tournament)
+            foreach ($tournament['teams'] as $team)
+            if ($team['id'] == $teamId)
+                return $team;
+
+        return NULL;
+    }
+
+    public function GetPlayerById($playerId)
+    {
+        if ($this->_DATA === NULL) return NULL;
+
+        foreach ($this->_DATA['players'] as $player)
+            if ($player['id'] == $playerId)
+            return $player;
+
+        return NULL;
+    }
+
+    private function XMLContentToObject($xml_content)
+    {
+        libxml_use_internal_errors(TRUE);
+        try
+        {
+            return new SimpleXMLElement($xml_content);
+        }
+        catch (Exception $e)
+        {
+            return NULL;
+        }
+    }
 }
