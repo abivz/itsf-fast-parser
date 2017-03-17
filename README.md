@@ -1,6 +1,12 @@
 # About
 ### FASTParser.php
-`FASTParser.php` contain function `Parse(fastXmlContent)` which converting large FAST xml-file to short like this:
+Class `FASTParser` contain:
+* `$_DATA` - Public variable. Contain result `Parse` function.
+* `Parse($xml_content)` - Public function. Converting large FAST xml-file to short. Return TRUE or FALSE
+* `GetLeaderboard()` - Public function. Create leaderboard based on last phase. Return Array or NULL.
+* `GetTeamById($teamId)` - Public function. Get team by id. Return Array or NULL.
+* `GetPlayerById($playerId)` - Public function. Get player by id. Return Array or NULL.
+* `XMLContentToObject($xml_content)` - Private function. Used in `Parse` function. Return XMLObject or NULL.
 
 ```json
 {
@@ -75,7 +81,8 @@
 }
 ```
 ### FASTArchive.php
-`FASTArchive.php` contain function `ProccessFile(fileArray, inputName, saveUploadedFile = false, savePath = '')` which process FAST-archive or FAST xml-file and return xml content or NULL.
+Class `FASTArchive` contain:
+*  `Open($file_path)` - Public function. Try to open FAST zip-archive. Return xml content or NULL.
 
 # License
 The MIT License (MIT)
