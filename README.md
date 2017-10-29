@@ -1,4 +1,7 @@
 # About
+Functions for server-side proccess game results from [International Table Soccer Federation](https://www.table-soccer.org/) FAST application.
+
+# Classes
 ### FASTParser.php
 Class `FASTParser` contain:
 * `$_DATA` - Public variable. Contain result `Parse` function.
